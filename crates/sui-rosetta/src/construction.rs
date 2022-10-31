@@ -8,7 +8,7 @@ use fastcrypto::encoding::Hex;
 
 use sui_types::base_types::{encode_bytes_hex, SuiAddress};
 use sui_types::crypto;
-use sui_types::crypto::{SignableBytes, SignatureScheme, ToFromBytes};
+use sui_types::crypto::{SignatureScheme, ToFromBytes};
 use sui_types::gas_coin::GasCoin;
 use sui_types::messages::{
     QuorumDriverRequest, QuorumDriverRequestType, QuorumDriverResponse, Transaction,
@@ -29,6 +29,8 @@ use crate::types::{
 };
 use crate::ErrorType::InternalError;
 use crate::{ErrorType, OnlineServerContext, SuiEnv};
+use anyhow::anyhow;
+use sui_types::intent::IntentMessage;
 
 /// This module implements the [Rosetta Construction API](https://www.rosetta-api.org/docs/ConstructionApi.html)
 
@@ -87,15 +89,11 @@ pub async fn combine(
     let unsigned_tx = request
         .unsigned_transaction
         .to_vec()
-        .map_err(|e| anyhow::anyhow!(e))?;
-    let data = TransactionData::from_signable_bytes(&unsigned_tx)?;
+        .map_err(|e| anyhow!(e))?;
+    let intent_msg = IntentMessage::<TransactionData>::from_bytes(&unsigned_tx)?;
     let sig = request.signatures.first().unwrap();
-    let sig_bytes = sig.hex_bytes.to_vec().map_err(|e| anyhow::anyhow!(e))?;
-    let pub_key = sig
-        .public_key
-        .hex_bytes
-        .to_vec()
-        .map_err(|e| anyhow::anyhow!(e))?;
+    let sig_bytes = sig.hex_bytes.to_vec().map_err(|e| anyhow!(e))?;
+    let pub_key = sig.public_key.hex_bytes.to_vec().map_err(|e| anyhow!(e))?;
     let flag = vec![match sig.signature_type {
         SignatureType::Ed25519 => SignatureScheme::ED25519,
         SignatureType::Ecdsa => SignatureScheme::Secp256k1,
@@ -103,7 +101,8 @@ pub async fn combine(
     .flag()];
 
     let signed_tx = Transaction::new(
-        data,
+        intent_msg.value,
+        intent_msg.intent,
         crypto::Signature::from_bytes(&[&*flag, &*sig_bytes, &*pub_key].concat())?,
     );
     signed_tx.verify_sender_signature()?;
@@ -237,20 +236,14 @@ pub async fn parse(
     env.check_network_identifier(&request.network_identifier)?;
 
     let data = if request.signed {
-        let tx: Transaction = bcs::from_bytes(
-            &request
-                .transaction
-                .to_vec()
-                .map_err(|e| anyhow::anyhow!(e))?,
-        )?;
+        let tx: Transaction =
+            bcs::from_bytes(&request.transaction.to_vec().map_err(|e| anyhow!(e))?)?;
         tx.signed_data.data
     } else {
-        TransactionData::from_signable_bytes(
-            &request
-                .transaction
-                .to_vec()
-                .map_err(|e| anyhow::anyhow!(e))?,
-        )?
+        let intent_msg = IntentMessage::<TransactionData>::from_bytes(
+            &request.transaction.to_vec().map_err(|e| anyhow!(e))?,
+        )?;
+        intent_msg.value
     };
     let account_identifier_signers = if request.signed {
         vec![AccountIdentifier {
