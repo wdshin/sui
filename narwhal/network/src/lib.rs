@@ -13,6 +13,7 @@ pub mod admin;
 pub mod anemo_ext;
 mod bounded_executor;
 pub mod connectivity;
+pub mod failpoints;
 pub mod metrics;
 mod p2p;
 mod retry;
