@@ -5,6 +5,7 @@ use super::*;
 
 use crate::consensus_utils::*;
 use crate::{metrics::ConsensusMetrics, Consensus};
+use fastcrypto::hash::Hash;
 #[allow(unused_imports)]
 use fastcrypto::traits::KeyPair;
 use prometheus::Registry;
@@ -79,10 +80,10 @@ async fn commit_one() {
     let mut sequence = committed_sub_dag.certificates.into_iter();
     for _ in 1..=4 {
         let output = sequence.next().unwrap();
-        assert_eq!(output.certificate.round(), 1);
+        assert_eq!(output.round(), 1);
     }
     let output = sequence.next().unwrap();
-    assert_eq!(output.certificate.round(), 2);
+    assert_eq!(output.round(), 2);
 }
 
 // Run for 8 dag rounds with one dead node node (that is not a leader). We should commit the leaders of
@@ -150,10 +151,10 @@ async fn dead_node() {
     for i in 1..=21 {
         let output = sequence.next().unwrap();
         let expected = ((i - 1) / keys.len() as u64) + 1;
-        assert_eq!(output.certificate.round(), expected);
+        assert_eq!(output.round(), expected);
     }
     let output = sequence.next().unwrap();
-    assert_eq!(output.certificate.round(), 8);
+    assert_eq!(output.round(), 8);
 }
 
 // Run for 5 dag rounds. The leader of round 2 does not have enough support, but the leader of
@@ -263,23 +264,23 @@ async fn not_enough_support() {
     let mut sequence = committed_sub_dag.certificates.into_iter();
     for _ in 1..=3 {
         let output = sequence.next().unwrap();
-        assert_eq!(output.certificate.round(), 1);
+        assert_eq!(output.round(), 1);
     }
     let output = sequence.next().unwrap();
-    assert_eq!(output.certificate.round(), 2);
+    assert_eq!(output.round(), 2);
 
     let committed_sub_dag = rx_output.recv().await.unwrap();
     let mut sequence = committed_sub_dag.certificates.into_iter();
     for _ in 1..=3 {
         let output = sequence.next().unwrap();
-        assert_eq!(output.certificate.round(), 2);
+        assert_eq!(output.round(), 2);
     }
     for _ in 1..=3 {
         let output = sequence.next().unwrap();
-        assert_eq!(output.certificate.round(), 3);
+        assert_eq!(output.round(), 3);
     }
     let output = sequence.next().unwrap();
-    assert_eq!(output.certificate.round(), 4);
+    assert_eq!(output.round(), 4);
 }
 
 // Run for 7 dag rounds. Node 0 (the leader of round 2) is missing for rounds 1 and 2,
@@ -353,18 +354,18 @@ async fn missing_leader() {
     let mut sequence = committed_sub_dag.certificates.into_iter();
     for _ in 1..=3 {
         let output = sequence.next().unwrap();
-        assert_eq!(output.certificate.round(), 1);
+        assert_eq!(output.round(), 1);
     }
     for _ in 1..=3 {
         let output = sequence.next().unwrap();
-        assert_eq!(output.certificate.round(), 2);
+        assert_eq!(output.round(), 2);
     }
     for _ in 1..=4 {
         let output = sequence.next().unwrap();
-        assert_eq!(output.certificate.round(), 3);
+        assert_eq!(output.round(), 3);
     }
     let output = sequence.next().unwrap();
-    assert_eq!(output.certificate.round(), 4);
+    assert_eq!(output.round(), 4);
 }
 
 // Run for 4 dag rounds in ideal conditions (all nodes reference all other nodes). We should commit
@@ -443,12 +444,12 @@ async fn epoch_change() {
         let mut sequence = committed_sub_dag.certificates.into_iter();
         for _ in 1..=4 {
             let output = sequence.next().unwrap();
-            assert_eq!(output.certificate.epoch(), epoch);
-            assert_eq!(output.certificate.round(), 1);
+            assert_eq!(output.epoch(), epoch);
+            assert_eq!(output.round(), 1);
         }
         let output = sequence.next().unwrap();
-        assert_eq!(output.certificate.epoch(), epoch);
-        assert_eq!(output.certificate.round(), 2);
+        assert_eq!(output.epoch(), epoch);
+        assert_eq!(output.round(), 2);
 
         // Move to the next epoch.
         committee.epoch = epoch + 1;
@@ -532,12 +533,12 @@ async fn restart_with_new_committee() {
         let mut sequence = committed_sub_dag.certificates.into_iter();
         for _ in 1..=4 {
             let output = sequence.next().unwrap();
-            assert_eq!(output.certificate.epoch(), epoch);
-            assert_eq!(output.certificate.round(), 1);
+            assert_eq!(output.epoch(), epoch);
+            assert_eq!(output.round(), 1);
         }
         let output = sequence.next().unwrap();
-        assert_eq!(output.certificate.epoch(), epoch);
-        assert_eq!(output.certificate.round(), 2);
+        assert_eq!(output.epoch(), epoch);
+        assert_eq!(output.round(), 2);
 
         // Move to the next epoch.
         committee.epoch = epoch + 1;
