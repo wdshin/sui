@@ -5,6 +5,7 @@ use std::collections::BTreeMap;
 use std::ops::Range;
 use std::str::FromStr;
 
+use fastcrypto::traits::KeyPair;
 use move_core_types::identifier::Identifier;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
@@ -21,13 +22,16 @@ use sui_json_rpc_types::{
     SuiCertifiedTransaction, SuiData, SuiEvent, SuiEventEnvelope, SuiExecutionStatus,
     SuiGasCostSummary, SuiObject, SuiObjectInfo, SuiObjectRead, SuiObjectRef, SuiParsedData,
     SuiPastObjectRead, SuiRawData, SuiRawMoveObject, SuiTransactionData, SuiTransactionEffects,
-    SuiTransactionResponse, TransactionBytes, TransactionsPage, TransferObjectParams,
+    SuiTransactionResponse, SuiTransactionWithAuthSignersResponse, TransactionBytes,
+    TransactionsPage, TransferObjectParams,
 };
 use sui_open_rpc::ExamplePairing;
 use sui_types::base_types::{
     ObjectDigest, ObjectID, ObjectType, SequenceNumber, SuiAddress, TransactionDigest,
 };
-use sui_types::crypto::{get_key_pair_from_rng, AccountKeyPair, Signature};
+use sui_types::crypto::{
+    get_key_pair_from_rng, AccountKeyPair, AuthorityKeyPair, AuthorityPublicKeyBytes, Signature,
+};
 use sui_types::crypto::{AuthorityQuorumSignInfo, SuiSignature};
 use sui_types::event::EventID;
 use sui_types::gas_coin::GasCoin;
@@ -76,6 +80,7 @@ impl RpcExampleProvider {
             self.get_raw_object(),
             self.get_total_transaction_number(),
             self.get_transaction(),
+            self.get_transaction_with_auth_signers(),
             self.get_transactions(),
             self.get_events(),
         ]
@@ -348,6 +353,34 @@ impl RpcExampleProvider {
                 vec![(
                     "digest",
                     json!(result.certificate.transaction_digest.clone()),
+                )],
+                json!(result),
+            )],
+        )
+    }
+
+    fn get_transaction_with_auth_signers(&mut self) -> Examples {
+        let (_, _, _, _, tx_response, _) = self.get_transfer_data_response();
+        let tx_response_2 = tx_response.clone();
+        let sec1: AuthorityKeyPair = get_key_pair_from_rng(&mut StdRng::from_seed([0; 32])).1;
+        let sec2: AuthorityKeyPair = get_key_pair_from_rng(&mut StdRng::from_seed([1; 32])).1;
+        let sec3: AuthorityKeyPair = get_key_pair_from_rng(&mut StdRng::from_seed([2; 32])).1;
+
+        let result = SuiTransactionWithAuthSignersResponse {
+            tx_response,
+            signers: vec![
+                AuthorityPublicKeyBytes::from(sec1.public()),
+                AuthorityPublicKeyBytes::from(sec2.public()),
+                AuthorityPublicKeyBytes::from(sec3.public()),
+            ],
+        };
+        Examples::new(
+            "sui_getTransactionWithAuthSigners",
+            vec![ExamplePairing::new(
+                "Return the transaction response and a list of authorities that committed to the authority signature",
+                vec![(
+                    "digest",
+                    json!(tx_response_2.certificate.transaction_digest.clone()),
                 )],
                 json!(result),
             )],

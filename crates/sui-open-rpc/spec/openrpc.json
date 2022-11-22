@@ -437,7 +437,7 @@
             {
               "name": "query",
               "value": {
-                "Transaction": "Vi63z0O8cI/1smk/OYkxoECgOF4LxllfNwKQCDlHxmk="
+                "Transaction": "ewa++QvMPU1gkIJuz9F9r5RMGyAjOGZWB5+jBqkmDfg="
               }
             },
             {
@@ -462,7 +462,7 @@
               "data": [
                 {
                   "timestamp": 0,
-                  "txDigest": "Vi63z0O8cI/1smk/OYkxoECgOF4LxllfNwKQCDlHxmk=",
+                  "txDigest": "ewa++QvMPU1gkIJuz9F9r5RMGyAjOGZWB5+jBqkmDfg=",
                   "id": {
                     "txSeq": 0,
                     "eventSeq": 0
@@ -471,12 +471,12 @@
                     "transferObject": {
                       "packageId": "0x0000000000000000000000000000000000000002",
                       "transactionModule": "native",
-                      "sender": "0xc9f373e51a0a03bfd8b1a861fb7e220b6617e575",
+                      "sender": "0xb51604b518375dfdfddb5df52478ff085d215a0b",
                       "recipient": {
-                        "AddressOwner": "0xc677ed804f82f1c8587b98d64c00bfb46c3843bd"
+                        "AddressOwner": "0x6efc44edb5cd3dfe32f4bf6c3e8ac42eef1385e0"
                       },
                       "objectType": "0x2::example::Object",
-                      "objectId": "0x8bf6ccfa7c65a86138698cd1fdcac3dce8d8c7ce",
+                      "objectId": "0x1403e49a4b296adcb22ea27d3c92e4ce2256ac64",
                       "version": 2
                     }
                   }
@@ -1140,6 +1140,154 @@
       ]
     },
     {
+      "name": "sui_getTransactionWithAuthSigners",
+      "tags": [
+        {
+          "name": "Read API"
+        }
+      ],
+      "description": "Return the transaction response object along with the authority public keys that commits to the authority signature.",
+      "params": [
+        {
+          "name": "digest",
+          "description": "the digest of the queried transaction",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/TransactionDigest"
+          }
+        }
+      ],
+      "result": {
+        "name": "SuiTransactionWithAuthSignersResponse",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/SuiTransactionWithAuthSignersResponse"
+        }
+      },
+      "examples": [
+        {
+          "name": "Return the transaction response and a list of authorities that committed to the authority signature",
+          "params": [
+            {
+              "name": "digest",
+              "value": "spsGJA66Ra3IYxwGAmiF9bHPZVy1VGcZGDzGgEqwgTg="
+            }
+          ],
+          "result": {
+            "name": "Result",
+            "value": {
+              "tx_response": {
+                "certificate": {
+                  "transactionDigest": "spsGJA66Ra3IYxwGAmiF9bHPZVy1VGcZGDzGgEqwgTg=",
+                  "data": {
+                    "transactions": [
+                      {
+                        "TransferObject": {
+                          "recipient": "0x4318fdd400db67364ef350c952676d857dc37fae",
+                          "objectRef": {
+                            "objectId": "0x7d93298a1245c31b420688c1686cb4d1356d1718",
+                            "version": 2,
+                            "digest": "/tIpGuJKP4F3NToFIg12XKnEIaNoCD8Y/kcvOVV9xCo="
+                          }
+                        }
+                      }
+                    ],
+                    "sender": "0x81ded257e286d07152f8214b346484ae9962f833",
+                    "gasPayment": {
+                      "objectId": "0x0dd82e93a483c5ab5f01a29887a1d95e5b548b61",
+                      "version": 2,
+                      "digest": "baY7DOB9gW6J73uaOCF3tEIruqJ/fmJeoxmqChhIZm8="
+                    },
+                    "gasBudget": 1000
+                  },
+                  "txSignature": "AIqA6gT8cLqxIeZ6eCsK0C3TPdj3OoAfd2sEmImJTPqtAnliSgZyvNl2Mfox7f/G30PBHr7IyPE7jDzX5Ua0AQA7UkB7DBpCBPWKijolN67DzVze6/epWXeG0Po5Idt5/g==",
+                  "authSignInfo": {
+                    "epoch": 0,
+                    "signature": "",
+                    "signers_map": [
+                      58,
+                      48,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0
+                    ]
+                  }
+                },
+                "effects": {
+                  "status": {
+                    "status": "success"
+                  },
+                  "gasUsed": {
+                    "computationCost": 100,
+                    "storageCost": 100,
+                    "storageRebate": 10
+                  },
+                  "transactionDigest": "rv7rjBVNfdxFa4rqoxMsdANTHcmOg/bhmNLX0XupHdw=",
+                  "mutated": [
+                    {
+                      "owner": {
+                        "AddressOwner": "0x81ded257e286d07152f8214b346484ae9962f833"
+                      },
+                      "reference": {
+                        "objectId": "0x0dd82e93a483c5ab5f01a29887a1d95e5b548b61",
+                        "version": 2,
+                        "digest": "baY7DOB9gW6J73uaOCF3tEIruqJ/fmJeoxmqChhIZm8="
+                      }
+                    },
+                    {
+                      "owner": {
+                        "AddressOwner": "0x4318fdd400db67364ef350c952676d857dc37fae"
+                      },
+                      "reference": {
+                        "objectId": "0x7d93298a1245c31b420688c1686cb4d1356d1718",
+                        "version": 2,
+                        "digest": "/tIpGuJKP4F3NToFIg12XKnEIaNoCD8Y/kcvOVV9xCo="
+                      }
+                    }
+                  ],
+                  "gasObject": {
+                    "owner": {
+                      "ObjectOwner": "0x81ded257e286d07152f8214b346484ae9962f833"
+                    },
+                    "reference": {
+                      "objectId": "0x0dd82e93a483c5ab5f01a29887a1d95e5b548b61",
+                      "version": 2,
+                      "digest": "baY7DOB9gW6J73uaOCF3tEIruqJ/fmJeoxmqChhIZm8="
+                    }
+                  },
+                  "events": [
+                    {
+                      "transferObject": {
+                        "packageId": "0x0000000000000000000000000000000000000002",
+                        "transactionModule": "native",
+                        "sender": "0x81ded257e286d07152f8214b346484ae9962f833",
+                        "recipient": {
+                          "AddressOwner": "0x4318fdd400db67364ef350c952676d857dc37fae"
+                        },
+                        "objectType": "0x2::example::Object",
+                        "objectId": "0x7d93298a1245c31b420688c1686cb4d1356d1718",
+                        "version": 2
+                      }
+                    }
+                  ]
+                },
+                "timestamp_ms": null,
+                "parsed_data": null
+              },
+              "signers": [
+                "mfJe9h+AMrkUY2RgmCxcxvE07x3a52ZX8sv+wev8jQlzdAgN9vzw3Li8Sw2OCvXYDrv/K0xZn1T0LWMS38MUJ2B4wcw0fru+xRmL4lhRPzhrkw0CwnSagD4jMJVevRoQ",
+                "ltGcU/G+4hWMP8+1uy8G06gjdmdSnS2PD7si/lw7PmR0hCC0EDZ0SQR22YUw0GMnEiLSpZsPeTKQnMRVow8AxpOA5ohTdelCQ/dGjpVjqtKTMKynq0MZJ1QOlQiIjw4c",
+                "rfLiNQ/ppY8/pQd3SZ8gMxxFUKtw9qT7JaWMYbULU2YQe1wGMy5xu0eqmc4tXAf+DasEuK9xWJ8PKSxQOC66atTJCssBCrnbdBKYiyq6EBiq+ECxOQqLK+4/3jW0q3/f"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "sui_getTransactions",
       "tags": [
         {
@@ -1194,12 +1342,12 @@
             {
               "name": "query",
               "value": {
-                "InputObject": "0x557dc42aaefeeb8c154d7ddc456b8aeaa3132c74"
+                "InputObject": "0xe293c08cec0f40783d9ac4bf4abb4d7f820647fd"
               }
             },
             {
               "name": "cursor",
-              "value": "A1MdyY6D9uGY0tfRe6kd3H5xfPcIyTcGDwQEhzbsM/s="
+              "value": "hdGRg97nx/+VVpf+K3BMlUCjhG6SmLddtyXB7jAnt4M="
             },
             {
               "name": "limit",
@@ -1214,11 +1362,11 @@
             "name": "Result",
             "value": {
               "data": [
-                "4fwXyBRwidxDGP3UANtnNk7zUMlSZ22FfcN/rn2TKYo=",
-                "EkXDG0IGiMFobLTRNW0XGA3YLpOkg8WrXwGimIeh2V4=",
-                "W1SLYW2mOwzgfYFuie97mjghd7RCK7qif35iXqMZqgo="
+                "fnF89wjJNwYPBASHNuwz+xdG2Zml5YzVxnftgE+C8cg=",
+                "WHuY1kwAv7RsOEO9i/bM+nxlqGE4aYzR/crD3OjYx84=",
+                "hj8xPaPb2SqD7ybRKLiP5mvybg4NCc2vcn0dhMzKqXo="
               ],
-              "nextCursor": "GEhmb/7SKRriSj+BdzU6BSINdlypxCGjaAg/GP5HLzk="
+              "nextCursor": "Asw6mAQWcOFgnbcU6YWMlunkaYVfHPO/35foZbEMAEY="
             }
           }
         }
@@ -4315,6 +4463,24 @@
             ],
             "format": "uint64",
             "minimum": 0.0
+          }
+        }
+      },
+      "SuiTransactionWithAuthSignersResponse": {
+        "type": "object",
+        "required": [
+          "signers",
+          "tx_response"
+        ],
+        "properties": {
+          "signers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthorityPublicKeyBytes"
+            }
+          },
+          "tx_response": {
+            "$ref": "#/components/schemas/SuiTransactionResponse"
           }
         }
       },

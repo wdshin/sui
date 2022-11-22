@@ -18,9 +18,9 @@ import { type DataType } from './TransactionResultType';
 import TransactionView from './TransactionView';
 
 import type {
-    SuiTransactionResponse,
     TransactionEffects,
     SuiObjectRef,
+    SuiTransactionWithAuthSignersResponse,
 } from '@mysten/sui.js';
 
 import { useRpc } from '~/hooks/useRpc';
@@ -29,6 +29,7 @@ import { useRpc } from '~/hooks/useRpc';
 // TODO: clean up duplicate fields
 const initState: DataType = {
     transaction: null,
+    signers: [],
     loadState: 'pending',
     txId: '',
     data: {
@@ -75,21 +76,22 @@ function FailedToGetTxResults({ id }: { id: string }) {
 }
 
 const transformTransactionResponse = (
-    txObj: SuiTransactionResponse,
+    txObj: SuiTransactionWithAuthSignersResponse,
     id: string
 ): DataType => {
     return {
-        ...txObj.certificate,
-        transaction: txObj,
-        status: getExecutionStatusType(txObj)!,
-        gasFee: getTotalGasUsed(txObj)!,
-        txError: getExecutionStatusError(txObj) ?? '',
+        ...txObj.tx_response.certificate,
+        transaction: txObj.tx_response,
+        signers: txObj.signers,
+        status: getExecutionStatusType(txObj.tx_response)!,
+        gasFee: getTotalGasUsed(txObj.tx_response)!,
+        txError: getExecutionStatusError(txObj.tx_response) ?? '',
         txId: id,
         loadState: 'loaded',
-        mutated: getCreatedOrMutatedData(txObj.effects, 'mutated'),
-        created: getCreatedOrMutatedData(txObj.effects, 'created'),
-        events: txObj.effects.events,
-        timestamp_ms: txObj.timestamp_ms,
+        mutated: getCreatedOrMutatedData(txObj.tx_response.effects, 'mutated'),
+        created: getCreatedOrMutatedData(txObj.tx_response.effects, 'created'),
+        events: txObj.tx_response.effects.events,
+        timestamp_ms: txObj.tx_response.timestamp_ms,
     };
 };
 
@@ -101,7 +103,7 @@ function TransactionResultAPI({ id }: { id: string }) {
             return;
         }
 
-        rpc.getTransactionWithEffects(id)
+        rpc.getTransactionWithAuthSigners(id)
             .then((txObj) => {
                 setTxState(transformTransactionResponse(txObj, id));
             })
@@ -150,7 +152,7 @@ function TransactionResult() {
 
     const checkStateHasData = (
         state: any
-    ): state is { data: SuiTransactionResponse } => {
+    ): state is { data: SuiTransactionWithAuthSignersResponse } => {
         return state !== null && 'data' in state;
     };
 

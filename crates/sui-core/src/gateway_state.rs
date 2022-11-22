@@ -55,7 +55,8 @@ use sui_json_rpc_types::{
     GetObjectDataResponse, GetRawObjectDataResponse, MoveCallParams, RPCTransactionRequestParams,
     SuiData, SuiObject, SuiObjectInfo, SuiParsedMergeCoinResponse, SuiParsedPublishResponse,
     SuiParsedSplitCoinResponse, SuiParsedTransactionResponse, SuiTransactionEffects,
-    SuiTransactionResponse, SuiTypeTag, TransferObjectParams,
+    SuiTransactionResponse, SuiTransactionWithAuthSignersResponse, SuiTypeTag,
+    TransferObjectParams,
 };
 use sui_types::error::SuiError::ObjectLockConflict;
 
@@ -477,6 +478,12 @@ pub trait GatewayAPI {
         &self,
         digest: TransactionDigest,
     ) -> Result<SuiTransactionResponse, anyhow::Error>;
+
+    /// return transaction details by digest, along with authority public keys that committed to the authority signature.
+    async fn get_transaction_with_auth_signers(
+        &self,
+        digest: TransactionDigest,
+    ) -> Result<SuiTransactionWithAuthSignersResponse, anyhow::Error>;
 }
 
 impl<A> GatewayState<A>
@@ -1836,5 +1843,12 @@ where
             timestamp_ms: None,
             parsed_data: None,
         })
+    }
+
+    async fn get_transaction_with_auth_signers(
+        &self,
+        _digest: TransactionDigest,
+    ) -> Result<SuiTransactionWithAuthSignersResponse, anyhow::Error> {
+        todo!()
     }
 }

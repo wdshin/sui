@@ -16,6 +16,7 @@ import {
   isSuiMoveNormalizedModules,
   isSuiMoveNormalizedStruct,
   isSuiTransactionResponse,
+  isSuiTransactionWithAuthSignersResponse,
   isTransactionEffects,
 } from '../types/index.guard';
 import {
@@ -53,6 +54,7 @@ import {
   FaucetResponse,
   Order,
   TransactionEffects,
+  SuiTransactionWithAuthSignersResponse,
 } from '../types';
 import { SignatureScheme } from '../cryptography/publickey';
 import {
@@ -492,6 +494,24 @@ export class JsonRpcProvider extends Provider {
         'sui_getTransaction',
         [digest],
         isSuiTransactionResponse,
+        this.options.skipDataValidation
+      );
+      return resp;
+    } catch (err) {
+      throw new Error(
+        `Error getting transaction with effects: ${err} for digest ${digest}`
+      );
+    }
+  }
+
+  async getTransactionWithAuthSigners(
+    digest: TransactionDigest
+  ): Promise<SuiTransactionWithAuthSignersResponse> {
+    try {
+      const resp = await this.client.requestWithType(
+        'sui_getTransactionWithAuthSigners',
+        [digest],
+        isSuiTransactionWithAuthSignersResponse,
         this.options.skipDataValidation
       );
       return resp;

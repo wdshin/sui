@@ -14,7 +14,8 @@ use sui_json_rpc_types::{
     MoveFunctionArgType, RPCTransactionRequestParams, SuiEventEnvelope, SuiEventFilter,
     SuiExecuteTransactionResponse, SuiGasCostSummary, SuiMoveNormalizedFunction,
     SuiMoveNormalizedModule, SuiMoveNormalizedStruct, SuiObjectInfo, SuiTransactionEffects,
-    SuiTransactionFilter, SuiTransactionResponse, SuiTypeTag, TransactionBytes, TransactionsPage,
+    SuiTransactionFilter, SuiTransactionResponse, SuiTransactionWithAuthSignersResponse,
+    SuiTypeTag, TransactionBytes, TransactionsPage,
 };
 use sui_open_rpc_macros::open_rpc;
 use sui_types::base_types::{ObjectID, SequenceNumber, SuiAddress, TransactionDigest};
@@ -102,6 +103,14 @@ pub trait RpcReadApi {
         /// the digest of the queried transaction
         digest: TransactionDigest,
     ) -> RpcResult<SuiTransactionResponse>;
+
+    /// Return the transaction response object along with the authority public keys that commits to the authority signature.
+    #[method(name = "getTransactionWithAuthSigners")]
+    async fn get_transaction_with_auth_signers(
+        &self,
+        /// the digest of the queried transaction
+        digest: TransactionDigest,
+    ) -> RpcResult<SuiTransactionWithAuthSignersResponse>;
 
     /// Return the object information for a specified object
     #[method(name = "getObject")]

@@ -32,8 +32,8 @@ use tracing::warn;
 use fastcrypto::encoding::{Base64, Encoding};
 use sui_json::SuiJsonValue;
 use sui_types::base_types::{
-    ObjectDigest, ObjectID, ObjectInfo, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
-    TransactionEffectsDigest,
+    AuthorityName, ObjectDigest, ObjectID, ObjectInfo, ObjectRef, SequenceNumber, SuiAddress,
+    TransactionDigest, TransactionEffectsDigest,
 };
 use sui_types::committee::EpochId;
 use sui_types::crypto::{AuthorityStrongQuorumSignInfo, SignableBytes, Signature};
@@ -315,12 +315,18 @@ pub enum MoveFunctionArgType {
     Object(ObjectValueKind),
 }
 
-#[derive(Serialize, Deserialize, Debug, JsonSchema)]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
 pub struct SuiTransactionResponse {
     pub certificate: SuiCertifiedTransaction,
     pub effects: SuiTransactionEffects,
     pub timestamp_ms: Option<u64>,
     pub parsed_data: Option<SuiParsedTransactionResponse>,
+}
+
+#[derive(Serialize, Deserialize, Debug, JsonSchema)]
+pub struct SuiTransactionWithAuthSignersResponse {
+    pub tx_response: SuiTransactionResponse,
+    pub signers: Vec<AuthorityName>,
 }
 
 #[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]

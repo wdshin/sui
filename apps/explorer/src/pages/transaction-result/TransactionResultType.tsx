@@ -7,10 +7,12 @@ import type {
     SuiObjectRef,
     SuiEvent,
     SuiTransactionResponse,
+    AuthorityName,
 } from '@mysten/sui.js';
 
 export type DataType = CertifiedTransaction & {
     transaction: SuiTransactionResponse | null;
+    signers: AuthorityName[];
     loadState: string;
     txId: string;
     status: ExecutionStatusType;

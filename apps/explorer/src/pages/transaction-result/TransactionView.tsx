@@ -49,6 +49,7 @@ import { StatAmount } from '~/ui/StatAmount';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '~/ui/Tabs';
 import { Text } from '~/ui/Text';
 import { LinkWithQuery } from '~/ui/utils/LinkWithQuery';
+import { truncate } from '~/utils/stringUtils';
 
 type TxDataProps = CertifiedTransaction & {
     status: ExecutionStatusType;
@@ -352,6 +353,15 @@ function TransactionView({ txdata }: { txdata: DataType }) {
         };
     }
 
+    const authSigners = {
+        title: 'Authority Signers',
+        content: txdata.signers.map((signer, index) => ({
+            label: `Signer #${index + 1}`,
+            value: truncate(signer, 14),
+            monotypeClass: true,
+        })),
+    };
+
     const createdMutateData = generateMutatedCreated(txdata);
 
     const GasStorageFees = {
@@ -539,6 +549,7 @@ function TransactionView({ txdata }: { txdata: DataType }) {
                         <div className={styles.txgridcomponent}>
                             <ItemView data={transactionSignatureData} />
                             <ItemView data={validatorSignatureData} />
+                            <ItemView data={authSigners} />
                         </div>
                     </TabPanel>
                 </TabPanels>
