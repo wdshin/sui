@@ -1,24 +1,23 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use super::{
-    authority_store_tables::{AuthorityEpochTables, AuthorityPerpetualTables},
-    *,
-};
-use crate::authority::authority_store_tables::ExecutionIndicesWithHash;
-use arc_swap::ArcSwap;
-use move_binary_format::CompiledModule;
-use move_bytecode_utils::module_cache::GetModule;
-use narwhal_executor::ExecutionIndices;
-use once_cell::sync::OnceCell;
-use rocksdb::Options;
-use serde::{Deserialize, Serialize};
-use serde_with::serde_as;
 use std::collections::BTreeMap;
 use std::iter;
 use std::path::Path;
 use std::sync::Arc;
 use std::{fmt::Debug, path::PathBuf};
+
+use arc_swap::ArcSwap;
+use move_binary_format::CompiledModule;
+use move_bytecode_utils::module_cache::GetModule;
+use once_cell::sync::OnceCell;
+use rocksdb::Options;
+use serde::{Deserialize, Serialize};
+use serde_with::serde_as;
+use tokio_retry::strategy::{jitter, ExponentialBackoff};
+use tracing::{debug, info, trace};
+
+use narwhal_executor::ExecutionIndices;
 use sui_storage::{
     lock_service::ObjectLockStatus,
     mutex_table::{LockGuard, MutexTable},
@@ -32,10 +31,15 @@ use sui_types::object::Owner;
 use sui_types::storage::{ChildObjectResolver, SingleTxContext, WriteKind};
 use sui_types::{base_types::SequenceNumber, storage::ParentSync};
 use sui_types::{batch::TxSequenceNumber, object::PACKAGE_VERSION};
-use tokio_retry::strategy::{jitter, ExponentialBackoff};
-use tracing::{debug, info, trace};
 use typed_store::rocks::DBBatch;
 use typed_store::traits::Map;
+
+use crate::authority::authority_store_tables::ExecutionIndicesWithHash;
+
+use super::{
+    authority_store_tables::{AuthorityEpochTables, AuthorityPerpetualTables},
+    *,
+};
 
 pub type AuthorityStore = SuiDataStore<AuthoritySignInfo>;
 pub type GatewayStore = SuiDataStore<EmptySignInfo>;
@@ -297,18 +301,40 @@ impl<S: Eq + Debug + Serialize + for<'de> Deserialize<'de>> SuiDataStore<S> {
             .collect())
     }
 
-    // Methods to read the store
-    pub fn get_dynamic_fields(&self, object: ObjectID) -> Result<Vec<DynamicFieldInfo>, SuiError> {
+    pub fn get_dynamic_fields(
+        &self,
+        object: ObjectID,
+        cursor: Option<ObjectID>,
+        limit: usize,
+    ) -> Result<Vec<DynamicFieldInfo>, SuiError> {
         debug!(?object, "get_dynamic_fields");
+        let cursor = cursor.unwrap_or(ObjectID::ZERO);
+        Ok(self
+            .perpetual_tables
+            .dynamic_field_index
+            .iter()
+            // The object id 0 is the smallest possible
+            .skip_to(&(object, cursor))?
+            .take_while(|((object_owner, _), _)| (object_owner == &object))
+            .map(|(_, object_info)| object_info)
+            .take(limit)
+            .collect())
+    }
+
+    pub fn get_dynamic_field_object_id(
+        &self,
+        object: ObjectID,
+        name: &str,
+    ) -> Result<Option<ObjectID>, SuiError> {
+        debug!(?object, "get_dynamic_field_object_id");
         Ok(self
             .perpetual_tables
             .dynamic_field_index
             .iter()
             // The object id 0 is the smallest possible
             .skip_to(&(object, ObjectID::ZERO))?
-            .take_while(|((object_owner, _), _)| (object_owner == &object))
-            .map(|(_, object_info)| object_info)
-            .collect())
+            .find(|((object_owner, _), info)| (object_owner == &object && info.name == name))
+            .map(|(_, object_info)| object_info.object_id))
     }
 
     pub fn get_object_by_key(

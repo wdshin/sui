@@ -432,13 +432,29 @@
           "schema": {
             "$ref": "#/components/schemas/ObjectID"
           }
+        },
+        {
+          "name": "cursor",
+          "description": "Optional paging cursor",
+          "schema": {
+            "$ref": "#/components/schemas/ObjectID"
+          }
+        },
+        {
+          "name": "limit",
+          "description": "Maximum item returned per page",
+          "schema": {
+            "type": "integer",
+            "format": "uint",
+            "minimum": 0.0
+          }
         }
       ],
       "result": {
         "name": "DynamicFieldPage",
         "required": true,
         "schema": {
-          "$ref": "#/components/schemas/Page_for_DynamicFieldInfo_and_String"
+          "$ref": "#/components/schemas/Page_for_DynamicFieldInfo_and_ObjectID"
         }
       }
     },
@@ -3595,7 +3611,7 @@
           }
         ]
       },
-      "Page_for_DynamicFieldInfo_and_String": {
+      "Page_for_DynamicFieldInfo_and_ObjectID": {
         "type": "object",
         "required": [
           "data"
@@ -3608,9 +3624,13 @@
             }
           },
           "nextCursor": {
-            "type": [
-              "string",
-              "null"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ObjectID"
+              },
+              {
+                "type": "null"
+              }
             ]
           }
         }
