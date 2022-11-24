@@ -1,5 +1,11 @@
 # @mysten/wallet-adapter-react
 
+## 8.1.0
+
+### Minor Changes
+
+- ce1830528: Make auto-connect configurable for WalletProvider
+
 ## 8.0.1
 
 ### Patch Changes
